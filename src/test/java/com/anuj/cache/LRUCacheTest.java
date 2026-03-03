@@ -1,0 +1,29 @@
+import com.anuj.cache.core.LRUCache;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+class LRUCacheTest {
+    @Test
+    void testPutAndGet() {
+        LRUCache<Integer, String> cache = new LRUCache<>(2);
+
+        cache.put(1, "A");
+        cache.put(2, "B");
+
+        assertEquals("A", cache.get(1));
+        assertEquals("B", cache.get(2));
+    }
+
+    @Test
+    void testEviction() {
+        LRUCache<Integer, String> cache = new LRUCache<>(2);
+
+        cache.put(1, "A");
+        cache.put(2, "B");
+        cache.put(3, "C");
+
+        assertNull(cache.get(1));
+        assertEquals("B", cache.get(2));
+        assertEquals("C", cache.get(3));
+    }
+}
