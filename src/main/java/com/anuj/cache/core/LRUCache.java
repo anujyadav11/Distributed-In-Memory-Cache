@@ -2,7 +2,12 @@ package com.anuj.cache.core;
 
 import java.util.HashMap;
 import java.util.Map;
-
+/**
+ * LRU Cache implementation with O(1) get and put operations.
+ * Uses HashMap for lookup and Doubly Linked List for eviction ordering.
+ *
+ * Not thread-safe. Concurrency will be added in next phase.
+ */
 public class LRUCache<K, V> implements Cache<K, V> {
 
     private final int capacity;
@@ -12,6 +17,9 @@ public class LRUCache<K, V> implements Cache<K, V> {
     private Node<K, V> tail;
 
     public LRUCache(int capacity) {
+        if(capacity <= 0) {
+            throw new IllegalArgumentException("Capacity must be greater than 0");
+        }
         this.capacity = capacity;
         this.map = new HashMap<>();
     }
@@ -99,5 +107,7 @@ public class LRUCache<K, V> implements Cache<K, V> {
         } else {
             tail = node.prev;
         }
+        node.prev = null;
+        node.next = null;
     }
 }
