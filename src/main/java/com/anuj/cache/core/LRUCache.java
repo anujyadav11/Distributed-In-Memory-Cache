@@ -2,6 +2,7 @@ package com.anuj.cache.core;
 
 import java.util.HashMap;
 import java.util.Map;
+
 /**
  * LRU Cache implementation with O(1) get and put operations.
  * Uses HashMap for lookup and Doubly Linked List for eviction ordering.
@@ -17,19 +18,28 @@ public class LRUCache<K, V> implements Cache<K, V> {
     private Node<K, V> tail;
 
     public LRUCache(int capacity) {
-        if(capacity <= 0) {
+        if (capacity <= 0) {
             throw new IllegalArgumentException("Capacity must be greater than 0");
         }
+
         this.capacity = capacity;
         this.map = new HashMap<>();
     }
 
-    *@Override
+    @Override
     public void put(K key, V value) {
+        putEntry(key, new CacheEntry<>(value, -1));
+    }
+
+    public void put(K key, V value, long ttlMillis) {
+        putEntry(key, new CacheEntry<>(value, ttlMillis));
+    }
+
+    private void putEntry(K key, CacheEntry<V> entry) {
 
         if (map.containsKey(key)) {
             Node<K, V> node = map.get(key);
-            node.value = value;
+            node.entry = entry;
             moveToHead(node);
             return;
         }
@@ -37,55 +47,32 @@ public class LRUCache<K, V> implements Cache<K, V> {
         if (map.size() >= capacity) {
             evict();
         }
-        putEntry(key, new CacheEntry<>(value, -1)); // No TTL by default
-        Node<K, V> newNode = new Node<>(key, value);
+
+        Node<K, V> newNode = new Node<>(key, entry);
+
         addToHead(newNode);
         map.put(key, newNode);
     }
 
     @Override
-public void put(K key, V value) {
-    putEntry(key, new CacheEntry<>(value, -1));
-}
-
-public void put(K key, V value, long ttlMillis) {
-    putEntry(key, new CacheEntry<>(value, ttlMillis));
-}
-
-private void putEntry(K key, CacheEntry<V> entry) {
-
-    if (map.containsKey(key)) {
-        Node<K, V> node = map.get(key);
-        node.entry = entry;
-        moveToHead(node);
-        return;
-    }
-
-    if (map.size() >= capacity) {
-        evict();
-    }
-
-    Node<K, V> newNode = new Node<>(key, entry);
-
-    addToHead(newNode);
-    map.put(key, newNode);
-}
-
-    @Override
     public V get(K key) {
+
         Node<K, V> node = map.get(key);
 
         if (node == null) return null;
-        if(node.entry.isExpired()) {
+
+        if (node.entry.isExpired()) {
             delete(key);
             return null;
         }
+
         moveToHead(node);
         return node.entry.getValue();
     }
 
     @Override
     public void delete(K key) {
+
         Node<K, V> node = map.remove(key);
 
         if (node != null) {
@@ -99,6 +86,7 @@ private void putEntry(K key, CacheEntry<V> entry) {
     }
 
     private void evict() {
+
         if (tail == null) return;
 
         map.remove(tail.key);
@@ -106,6 +94,7 @@ private void putEntry(K key, CacheEntry<V> entry) {
     }
 
     private void addToHead(Node<K, V> node) {
+
         node.next = head;
         node.prev = null;
 
@@ -138,6 +127,7 @@ private void putEntry(K key, CacheEntry<V> entry) {
         } else {
             tail = node.prev;
         }
+
         node.prev = null;
         node.next = null;
     }
