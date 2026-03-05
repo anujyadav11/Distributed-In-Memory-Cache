@@ -24,7 +24,7 @@ public class LRUCache<K, V> implements Cache<K, V> {
         this.map = new HashMap<>();
     }
 
-    @Override
+    *@Override
     public void put(K key, V value) {
 
         if (map.containsKey(key)) {
@@ -37,20 +37,51 @@ public class LRUCache<K, V> implements Cache<K, V> {
         if (map.size() >= capacity) {
             evict();
         }
-
+        putEntry(key, new CacheEntry<>(value, -1)); // No TTL by default
         Node<K, V> newNode = new Node<>(key, value);
         addToHead(newNode);
         map.put(key, newNode);
     }
 
     @Override
+public void put(K key, V value) {
+    putEntry(key, new CacheEntry<>(value, -1));
+}
+
+public void put(K key, V value, long ttlMillis) {
+    putEntry(key, new CacheEntry<>(value, ttlMillis));
+}
+
+private void putEntry(K key, CacheEntry<V> entry) {
+
+    if (map.containsKey(key)) {
+        Node<K, V> node = map.get(key);
+        node.entry = entry;
+        moveToHead(node);
+        return;
+    }
+
+    if (map.size() >= capacity) {
+        evict();
+    }
+
+    Node<K, V> newNode = new Node<>(key, entry);
+
+    addToHead(newNode);
+    map.put(key, newNode);
+}
+
+    @Override
     public V get(K key) {
         Node<K, V> node = map.get(key);
 
         if (node == null) return null;
-
+        if(node.entry.isExpired()) {
+            delete(key);
+            return null;
+        }
         moveToHead(node);
-        return node.value;
+        return node.entry.getValue();
     }
 
     @Override

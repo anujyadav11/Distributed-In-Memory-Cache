@@ -1,13 +1,15 @@
 package com.anuj.cache.core;
 
 class Node<K, V> {
+
     K key;
-    V value;
+    CacheEntry<V> entry;
+
     Node<K, V> prev;
     Node<K, V> next;
 
-    Node(K key, V value) {
+    Node(K key, CacheEntry<V> entry) {
         this.key = key;
-        this.value = value;
+        this.entry = entry;
     }
 }

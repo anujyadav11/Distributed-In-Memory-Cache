@@ -49,4 +49,13 @@ class LRUCacheTest {
 
         assertNull(cache.get(1));
     }
+    @Test
+    void testTTLExpiration() throws InterruptedException {
+        LRUCache<Integer, String> cache = new LRUCache<>(2);
+
+        cache.put(1, "A", 1000);
+        assertEquals("A", cache.get(1));
+        Thread.sleep(2000);
+        assertNull(cache.get(1));
+    }
 }
