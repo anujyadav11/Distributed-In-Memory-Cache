@@ -58,4 +58,12 @@ class LRUCacheTest {
         Thread.sleep(2000);
         assertNull(cache.get(1));
     }
+    @Test
+    void testBackgroundExpriation() throws InterruptedException {
+        LRUCache<Integer, String> cache = new LRUCache<>(2);
+
+        cache.put(1, "A", 1000);
+        Thread.sleep(6000);
+        assertNull(cache.get(1));
+    }
 }

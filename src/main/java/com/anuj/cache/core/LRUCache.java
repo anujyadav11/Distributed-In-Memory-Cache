@@ -2,7 +2,9 @@ package com.anuj.cache.core;
 
 import java.util.HashMap;
 import java.util.Map;
-
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 /**
  * LRU Cache implementation with O(1) get and put operations.
  * Uses HashMap for lookup and Doubly Linked List for eviction ordering.
@@ -16,6 +18,8 @@ public class LRUCache<K, V> implements Cache<K, V> {
 
     private Node<K, V> head;
     private Node<K, V> tail;
+    private final ScheduledExecutorService cleaner =
+        Executors.newSingleThreadScheduledExecutor();
 
     public LRUCache(int capacity) {
         if (capacity <= 0) {
@@ -24,6 +28,7 @@ public class LRUCache<K, V> implements Cache<K, V> {
 
         this.capacity = capacity;
         this.map = new HashMap<>();
+        startCleaner();
     }
 
     @Override
@@ -130,5 +135,19 @@ public class LRUCache<K, V> implements Cache<K, V> {
 
         node.prev = null;
         node.next = null;
+    }
+
+    private void startCleaner() {
+        cleaner.scheduleAtFixedRate(() -> {
+            for(K key : map.keySet()) {
+                Node<K, V> node = map.get(key);
+                if (node != null && node.entry.isExpired()) {
+                    delete(key);
+                }
+            }
+        }, 1, 1, TimeUnit.SECONDS);
+    }
+    public void shutdown() {
+        cleaner.shutdown();
     }
 }
