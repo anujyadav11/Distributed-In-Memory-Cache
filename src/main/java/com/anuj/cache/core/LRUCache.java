@@ -6,6 +6,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.ConcurrentHashMap;
 /**
  * LRU Cache implementation with O(1) get and put operations.
  * Uses HashMap for lookup and Doubly Linked List for eviction ordering.
@@ -15,7 +16,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class LRUCache<K, V> implements Cache<K, V> {
 
     private final int capacity;
-    private final Map<K, Node<K, V>> map;
+    private final ConcurrentHashMap<K, Node<K, V>> map;
 
     private Node<K, V> head;
     private Node<K, V> tail;
@@ -29,7 +30,7 @@ public class LRUCache<K, V> implements Cache<K, V> {
         }
 
         this.capacity = capacity;
-        this.map = new HashMap<>();
+        this.map = new ConcurrentHashMap<>();
         startCleaner();
     }
 
