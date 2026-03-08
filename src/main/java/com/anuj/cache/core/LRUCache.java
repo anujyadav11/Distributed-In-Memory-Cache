@@ -7,12 +7,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.ConcurrentHashMap;
-/**
- * LRU Cache implementation with O(1) get and put operations.
- * Uses HashMap for lookup and Doubly Linked List for eviction ordering.
- *
- * Not thread-safe. Concurrency will be added in next phase.
- */
+
 public class LRUCache<K, V> implements Cache<K, V> {
 
     private final int capacity;
@@ -23,7 +18,9 @@ public class LRUCache<K, V> implements Cache<K, V> {
     private final ScheduledExecutorService cleaner =
         Executors.newSingleThreadScheduledExecutor();
 
-    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();   
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    private final ChacheMetrics metrics = new ChacheMetrics();
+
     public LRUCache(int capacity) {
         if (capacity <= 0) {
             throw new IllegalArgumentException("Capacity must be greater than 0");
@@ -66,23 +63,31 @@ public class LRUCache<K, V> implements Cache<K, V> {
     public V get(K key) {
         lock.readLock().lock();
         try {
-        Node<K, V> node = map.get(key);
+            Node<K, V> node = map.get(key);
 
-        if (node == null) return null;
+            if (node == null){ 
+                metrics.recordMiss();
+                return null;
+        }
 
         if (node.entry.isExpired()) {
+            metrics.recordExpiration();
             delete(key);
             return null;
         }
 
         moveToHead(node);
+        metrics.recordHit();
         return node.entry.getValue();
     }
-    finally {
-        lock.readLock().unlock();
+        finally {
+            lock.readLock().unlock();
+        }
     }
+    public ChacheMetrics getMetrics() {
+        return metrics;
     }
-
+    
     @Override
     public void delete(K key) {
         lock.writeLock().lock();
@@ -108,6 +113,7 @@ public class LRUCache<K, V> implements Cache<K, V> {
         if (tail == null) return;
 
         map.remove(tail.key);
+        metrics.recordEviction();
         removeNode(tail);
     }
 
