@@ -7,10 +7,14 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class CacheServer {
 
     private final LRUCache<String, String> cache = new LRUCache<>(1000);
+
+    private final ExecutorService threadPool = Executors.newFixedThreadPool(10);
 
     public void start(int port) throws Exception {
 
@@ -22,7 +26,7 @@ public class CacheServer {
 
             Socket clientSocket = serverSocket.accept();
 
-            new Thread(() -> handleClient(clientSocket)).start();
+            threadPool.submit(() -> handleClient(clientSocket));
         }
     }
 
