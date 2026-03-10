@@ -17,7 +17,7 @@ public class CacheClient {
         PrintWriter out =
                 new PrintWriter(socket.getOutputStream(), true);
 
-        out.println("PUT name Anuj");
+        out.println("PUT name Anuj Yadav");
         System.out.println("Response: " + in.readLine());
 
         out.println("GET name");

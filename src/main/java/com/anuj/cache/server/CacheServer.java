@@ -55,22 +55,31 @@ public class CacheServer {
     }
 
     private String processCommand(String command) {
-
-        String[] parts = command.split(" ");
-
+        if(command == null || command.trim().isEmpty()) {
+            return "ERROR: Empty command";
+        }
+        String[] parts = command.trim().split("\\s+", 3);
         String action = parts[0].toUpperCase();
-
         switch (action) {
 
             case "PUT":
+                if (parts.length < 3) {
+                    return "ERROR: PUT command requires key and value";
+                }
                 cache.put(parts[1], parts[2]);
                 return "OK";
 
             case "GET":
+                if (parts.length < 2) {
+                    return "ERROR: GET command requires key";
+                }
                 String value = cache.get(parts[1]);
                 return value == null ? "NULL" : value;
 
             case "DELETE":
+                if (parts.length < 2) {
+                    return "ERROR: DELETE command requires key";
+                }
                 cache.delete(parts[1]);
                 return "OK";
 
