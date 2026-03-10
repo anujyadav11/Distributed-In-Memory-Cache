@@ -9,10 +9,12 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Logger;
 
 public class CacheServer {
 
     private final LRUCache<String, String> cache = new LRUCache<>(1000);
+    private final Logger logger = Logger.getLogger(CacheServer.class.getName());
 
     private final ExecutorService threadPool = Executors.newFixedThreadPool(10);
 
@@ -20,12 +22,12 @@ public class CacheServer {
 
         ServerSocket serverSocket = new ServerSocket(port);
 
-        System.out.println("Cache server started on port " + port);
+        logger.info("Cache server started on port " + port);
 
         while (true) {
 
             Socket clientSocket = serverSocket.accept();
-
+            logger.info("Client connected: " + clientSocket.getRemoteSocketAddress());
             threadPool.submit(() -> handleClient(clientSocket));
         }
     }
@@ -58,6 +60,7 @@ public class CacheServer {
         if(command == null || command.trim().isEmpty()) {
             return "ERROR: Empty command";
         }
+        logger.info("Command received: " + command);
         String[] parts = command.trim().split("\\s+", 3);
         String action = parts[0].toUpperCase();
         switch (action) {
