@@ -30,6 +30,7 @@ public class CacheServer {
             logger.info("Client connected: " + clientSocket.getRemoteSocketAddress());
             threadPool.submit(() -> handleClient(clientSocket));
         }
+        serverSocket.close();
     }
 
     private void handleClient(Socket socket) {
@@ -95,5 +96,10 @@ public class CacheServer {
         CacheServer server = new CacheServer();
 
         server.start(8080);
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            server.threadPool.shutdown();
+            System.out.println("Cache server stopped.");
+        }));
     }
 }
