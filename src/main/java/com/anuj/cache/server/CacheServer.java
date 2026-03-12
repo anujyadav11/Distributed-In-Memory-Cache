@@ -57,7 +57,7 @@ public class CacheServer {
         }
     }
 
-    private String processCommand(String command) {
+    public String processCommand(String command) {
 
     if (command == null || command.trim().isEmpty()) {
         return "ERROR: Empty command";

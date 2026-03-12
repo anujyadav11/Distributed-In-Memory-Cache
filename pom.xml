@@ -21,11 +21,11 @@
 
   <dependencies>
 
-    <!-- JUnit 5 for Testing -->
+    <!-- JUnit 5 -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>${junit.version}</version>
+      <version>5.10.0</version>
       <scope>test</scope>
     </dependency>
 
