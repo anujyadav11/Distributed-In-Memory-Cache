@@ -26,6 +26,9 @@ public class CacheClient {
         out.println("DELETE name");
         System.out.println("Response: " + in.readLine());
 
+        out.println("STATS");
+        System.out.println("Response: " + in.readLine());
+        
         socket.close();
     }
 }
