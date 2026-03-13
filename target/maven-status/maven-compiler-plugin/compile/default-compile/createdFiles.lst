@@ -1,4 +1,5 @@
 com/anuj/cache/server/CacheServer.class
+com/anuj/cache/persistence/SnapshotManager.class
 com/anuj/cache/core/LRUCache.class
 com/anuj/cache/core/CacheEntry.class
 com/anuj/cache/client/CacheClient.class

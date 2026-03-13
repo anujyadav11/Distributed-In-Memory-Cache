@@ -30,7 +30,14 @@ public class LRUCache<K, V> implements Cache<K, V> {
         this.map = new ConcurrentHashMap<>();
         startCleaner();
     }
-
+    public Map<K, CacheEntry<V>> getEntriesForSnapshot() {
+        Map<K, CacheEntry<V>> snapshot = new HashMap<>();
+        for (Map.Entry<K, Node<K,V>> entry : map.entrySet()) {
+            Node<K,V> node = entry.getValue();
+            snapshot.put(entry.getKey(), node.entry);
+    }
+        return snapshot;
+    }
     @Override
     public void put(K key, V value) {
         putEntry(key, new CacheEntry<>(value, -1));
@@ -59,6 +66,20 @@ public class LRUCache<K, V> implements Cache<K, V> {
         map.put(key, newNode);
     }
 
+    public void putRecovered(K key, V value, long expiryTime) {
+        lock.writeLock().lock();
+        try {
+            CacheEntry<V> entry = new CacheEntry<>(value, expiryTime);
+                Node<K, V> newNode = new Node<>(key, entry);
+
+                map.put(key, newNode);
+                
+                addToHead(newNode);
+        }
+        finally {
+            lock.writeLock().unlock();
+        }
+    }
     @Override
     public V get(K key) {
         lock.readLock().lock();
