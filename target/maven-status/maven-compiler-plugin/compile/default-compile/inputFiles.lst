@@ -4,6 +4,7 @@
 /Users/anujyadav/Developer/Distributed-In-Memory-Cache/src/main/java/com/anuj/cache/persistence/SnapshotManager.java
 /Users/anujyadav/Developer/Distributed-In-Memory-Cache/src/main/java/com/anuj/cache/server/CacheServer.java
 /Users/anujyadav/Developer/Distributed-In-Memory-Cache/src/main/java/com/anuj/cache/eviction/EvictionPolicy.java
+/Users/anujyadav/Developer/Distributed-In-Memory-Cache/src/main/java/com/anuj/cache/persistence/WALManager.java
 /Users/anujyadav/Developer/Distributed-In-Memory-Cache/src/main/java/com/anuj/cache/core/Cache.java
 /Users/anujyadav/Developer/Distributed-In-Memory-Cache/src/main/java/com/anuj/cache/core/CacheEntry.java
 /Users/anujyadav/Developer/Distributed-In-Memory-Cache/src/main/java/com/anuj/cache/core/LRUCache.java

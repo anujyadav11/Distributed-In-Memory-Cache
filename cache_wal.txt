@@ -1,0 +1,4 @@
+PUT name Anuj
+PUT key1 value1
+PUT city London
+DELETE city

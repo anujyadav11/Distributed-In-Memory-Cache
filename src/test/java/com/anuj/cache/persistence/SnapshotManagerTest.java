@@ -19,7 +19,7 @@ public class SnapshotManagerTest {
         manager.saveSnapshot(cache);
 
         LRUCache recoveredCache = new LRUCache<>(10);
-        mamager.loadSnapshot(recoveredCache);
+        manager.loadSnapshot(recoveredCache);
         assertEquals("Anuj", recoveredCache.get("user1"));
         assertEquals("Rahul", recoveredCache.get("user2"));
 
