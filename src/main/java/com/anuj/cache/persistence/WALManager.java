@@ -46,4 +46,11 @@ public class WALManager {
             e.printStackTrace();
         }
     }
+    public void resetLog(){
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(logFile, false))) {
+            // Clear the log file
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

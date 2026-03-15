@@ -39,12 +39,10 @@ public class CacheServer {
     private void startSnapshotScheduler() {
         ScheduledExecutorService scheduler =
                 Executors.newScheduledThreadPool(1);
-        scheduler.scheduleAtFixedRate(
-                () -> snapshotManager.saveSnapshot(cache),
-                30,
-                30,
-                TimeUnit.SECONDS
-        );
+        scheduler.scheduleAtFixedRate(() -> {
+            snapshotManager.saveSnapshot(cache);
+            walManager.resetLog();
+        }, 30, 30, TimeUnit.SECONDS);
     }
     public void start(int port) throws Exception {
         ServerSocket serverSocket = new ServerSocket(port);
