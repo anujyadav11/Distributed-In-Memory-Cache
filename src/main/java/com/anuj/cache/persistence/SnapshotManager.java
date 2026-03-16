@@ -16,9 +16,9 @@ public class SnapshotManager {
 
     // Save cache to disk
     public void saveSnapshot(LRUCache cache) {
-
+        String tempFile = snapshotFilePath + ".tmp";
         try (BufferedWriter writer =
-                    new BufferedWriter(new FileWriter(snapshotFilePath))) {
+                    new BufferedWriter(new FileWriter(tempFile))) {
             Map<String, CacheEntry<String>> entries =
             cache.getEntriesForSnapshot();
 
@@ -33,10 +33,13 @@ public class SnapshotManager {
 
             writer.newLine();
     }
-
         } catch (IOException e) {
             e.printStackTrace();
         }
+        File temp = new File(tempFile);
+        File snapshot = new File(snapshotFilePath);
+        
+        temp.renameTo(snapshot);
     }
 
     // Load cache from disk
@@ -73,7 +76,6 @@ public class SnapshotManager {
                     }
                 }
             }
-
         } catch (IOException e) {
             e.printStackTrace();
         }

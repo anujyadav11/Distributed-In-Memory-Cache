@@ -39,7 +39,7 @@ public class CacheServer {
     private void startSnapshotScheduler() {
         ScheduledExecutorService scheduler =
                 Executors.newScheduledThreadPool(1);
-        scheduler.scheduleAtFixedRate(() -> {
+            scheduler.scheduleAtFixedRate(() -> {
             snapshotManager.saveSnapshot(cache);
             walManager.resetLog();
         }, 30, 30, TimeUnit.SECONDS);

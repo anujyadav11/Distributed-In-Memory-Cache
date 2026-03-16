@@ -47,7 +47,7 @@ public class WALManager {
         }
     }
     public void resetLog(){
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(logFile, false))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(logFile))) {
             // Clear the log file
         } catch (IOException e) {
             e.printStackTrace();
