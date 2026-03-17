@@ -25,6 +25,7 @@ public class CacheServer {
             Executors.newFixedThreadPool(10);
     private SnapshotManager snapshotManager;
     private WALManager walManager;
+    private final long startTime = System.currentTimeMillis();
     // CONSTRUCTOR
     public CacheServer() {
         snapshotManager = new SnapshotManager("cache_snapshot.txt");
@@ -108,10 +109,20 @@ public class CacheServer {
     }
     private String getStats() {
         var metrics = cache.getMetrics();
-        return "hits=" + metrics.getHits() +
-                ",misses=" + metrics.getMisses() +
+        long hits = metrics.getHits();
+        long misses = metrics.getMisses();
+        long total = hits + misses;
+        
+        double hitRate = total == 0 ? 0 : ((double) hits / total) * 100;
+
+        long uptimeSeconds = (System.currentTimeMillis() - startTime) / 1000;
+
+        return "hits=" + hits +
+                ",misses=" + misses +
+                ",hitRate=" + String.format("%.2f", hitRate) + "%" +
                 ",evictions=" + metrics.getEvictions() +
                 ",expirations=" + metrics.getExpirations() +
+                ",uptime=" + uptimeSeconds + "s" +
                 ",size=" + cache.size();
     }
     public static void main(String[] args) throws Exception {
