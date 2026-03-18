@@ -129,6 +129,9 @@ public class LRUCache<K, V> implements Cache<K, V> {
         return map.size();
     }
 
+    public int capacity() {
+        return capacity;
+    }
     private void evict() {
 
         if (tail == null) return;

@@ -6,8 +6,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class CacheServerTest {
 
-    private final CacheServer server = new CacheServer();
-
+    private final CacheServer server = new CacheServer(1000);
+    
     @Test
     void testPutAndGet() {
 

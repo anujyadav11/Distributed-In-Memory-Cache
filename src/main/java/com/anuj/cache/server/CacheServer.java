@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 public class CacheServer {
-    private final LRUCache<String, String> cache = new LRUCache<>(1000);
+    private final LRUCache<String, String> cache;
     private static final Logger logger =
             Logger.getLogger(CacheServer.class.getName());
     private final ExecutorService threadPool =
@@ -27,15 +27,16 @@ public class CacheServer {
     private WALManager walManager;
     private final long startTime = System.currentTimeMillis();
     // CONSTRUCTOR
-    public CacheServer() {
-        snapshotManager = new SnapshotManager("cache_snapshot.txt");
-        // Load snapshot on startup
-        snapshotManager.loadSnapshot(cache);
-        // Start periodic snapshot saving
-        startSnapshotScheduler();
+    public CacheServer(int capacity) {
+        this.cache = new LRUCache<>(capacity);
 
+        snapshotManager = new SnapshotManager("cache_snapshot.txt");
         walManager = new WALManager("cache_wal.log");
+
+        snapshotManager.loadSnapshot(cache);
         walManager.replay(cache);
+
+        startSnapshotScheduler();
     }
     private void startSnapshotScheduler() {
         ScheduledExecutorService scheduler =
@@ -123,10 +124,27 @@ public class CacheServer {
                 ",evictions=" + metrics.getEvictions() +
                 ",expirations=" + metrics.getExpirations() +
                 ",uptime=" + uptimeSeconds + "s" +
+                ",capacity=" + cache.capacity() +
                 ",size=" + cache.size();
     }
     public static void main(String[] args) throws Exception {
-        CacheServer server = new CacheServer();
+        int capacity = 1000;
+        String env = System.getenv("CACHE_SIZE");
+        if (env != null) {
+            try {
+                capacity = Integer.parseInt(env);
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid CACHE_SIZE environment variable, using default: " + capacity);
+            }
+        }
+        if(args.length > 0){
+            try {
+                capacity = Integer.parseInt(args[0]);
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid capacity argument, using default: " + capacity);
+            }
+        }
+        CacheServer server = new CacheServer(capacity);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             server.threadPool.shutdown();
             System.out.println("Cache server stopped.");
