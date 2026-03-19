@@ -86,26 +86,26 @@ public class CacheServer {
                     return "ERROR: PUT requires key and value";
                 walManager.log(command);
                 cache.put(parts[1], parts[2]);
-                return "OK";
+                return "SUCCESS: OK";
 
             case "GET":
                 if (parts.length < 2)
                     return "ERROR: GET requires key";
                 String value = cache.get(parts[1]);
-                return value == null ? "NULL" : value;
+                return value == null ? "NULL" : "VALUE " + value;
 
             case "DELETE":
                 if (parts.length < 2)
                     return "ERROR: DELETE requires key";
                 walManager.log(command);
                 cache.delete(parts[1]);
-                return "OK";
+                return "SUCCESS: OK";
 
             case "STATS":
                 return getStats();
 
             default:
-                return "ERROR: Unknown command";
+                return "ERROR: PUT requires key and value";
         }
     }
     private String getStats() {

@@ -7,28 +7,66 @@ import java.net.Socket;
 
 public class CacheClient {
 
-    public static void main(String[] args) throws Exception {
+    private static final String HOST = "localhost";
+    private static final int PORT = 8080;
 
-        Socket socket = new Socket("localhost", 8080);
+    public static void main(String[] args) {
 
-        BufferedReader in =
-                new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        try (
+            Socket socket = new Socket(HOST, PORT);
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(socket.getInputStream()));
+            PrintWriter out = new PrintWriter(
+                    socket.getOutputStream(), true);
+            BufferedReader console = new BufferedReader(
+                    new InputStreamReader(System.in))
+        ) {
 
-        PrintWriter out =
-                new PrintWriter(socket.getOutputStream(), true);
+            System.out.println("Connected to Cache Server 🚀");
+            System.out.println("Type 'help' for commands");
 
-        out.println("PUT name Anuj Yadav");
-        System.out.println("Response: " + in.readLine());
+            String input;
 
-        out.println("GET name");
-        System.out.println("Response: " + in.readLine());
+            while (true) {
 
-        out.println("DELETE name");
-        System.out.println("Response: " + in.readLine());
+                System.out.print("> ");
+                input = console.readLine();
 
-        out.println("STATS");
-        System.out.println("Response: " + in.readLine());
-        
-        socket.close();
+                if (input == null) break;
+
+                // Exit command
+                if (input.equalsIgnoreCase("exit")) {
+                    System.out.println("Closing client...");
+                    break;
+                }
+
+                // Help command
+                if (input.equalsIgnoreCase("help")) {
+                    printHelp();
+                    continue;
+                }
+
+                // Send command to server
+                out.println(input);
+
+                // Read response
+                String response = in.readLine();
+
+                System.out.println("→ " + response);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+    private static void printHelp() {
+        System.out.println("""
+Available Commands:
+PUT <key> <value>
+GET <key>
+DELETE <key>
+STATS
+exit
+""");
     }
 }
