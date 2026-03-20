@@ -1,3 +1,2 @@
 key1=value1|-1
-user1=Anuj|-1
 name=Anuj|-1
