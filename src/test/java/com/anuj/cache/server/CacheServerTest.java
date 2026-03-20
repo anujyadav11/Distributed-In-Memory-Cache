@@ -7,15 +7,15 @@ import static org.junit.jupiter.api.Assertions.*;
 public class CacheServerTest {
 
     private final CacheServer server = new CacheServer(1000);
-    
+
     @Test
     void testPutAndGet() {
 
         String put = server.processCommand("PUT name Anuj");
-        assertEquals("OK", put);
+        assertEquals("SUCCESS: OK", put);
 
         String value = server.processCommand("GET name");
-        assertEquals("Anuj", value);
+        assertEquals("VALUE: Anuj", value);
     }
 
     @Test
@@ -24,7 +24,7 @@ public class CacheServerTest {
         server.processCommand("PUT city London");
 
         String del = server.processCommand("DELETE city");
-        assertEquals("OK", del);
+        assertEquals("SUCCESS: OK", del);
 
         String result = server.processCommand("GET city");
         assertEquals("NULL", result);

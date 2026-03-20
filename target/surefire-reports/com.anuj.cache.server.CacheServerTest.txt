@@ -1,7 +1,7 @@
 -------------------------------------------------------------------------------
 Test set: com.anuj.cache.server.CacheServerTest
 -------------------------------------------------------------------------------
-Tests run: 4, Failures: 3, Errors: 0, Skipped: 0, Time elapsed: 0.031 s <<< FAILURE! -- in com.anuj.cache.server.CacheServerTest
+Tests run: 4, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 0.029 s <<< FAILURE! -- in com.anuj.cache.server.CacheServerTest
 com.anuj.cache.server.CacheServerTest.testInvalidCommand -- Time elapsed: 0.007 s <<< FAILURE!
 org.opentest4j.AssertionFailedError: expected: <ERROR: Unknown command> but was: <ERROR: PUT requires key and value>
 	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
@@ -16,27 +16,14 @@ org.opentest4j.AssertionFailedError: expected: <ERROR: Unknown command> but was:
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
 
 com.anuj.cache.server.CacheServerTest.testPutAndGet -- Time elapsed: 0.002 s <<< FAILURE!
-org.opentest4j.AssertionFailedError: expected: <OK> but was: <SUCCESS: OK>
+org.opentest4j.AssertionFailedError: expected: <VALUE: Anuj> but was: <VALUE Anuj>
 	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
 	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
 	at org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
 	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
 	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
 	at org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1141)
-	at com.anuj.cache.server.CacheServerTest.testPutAndGet(CacheServerTest.java:15)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
-
-com.anuj.cache.server.CacheServerTest.testDelete -- Time elapsed: 0.001 s <<< FAILURE!
-org.opentest4j.AssertionFailedError: expected: <OK> but was: <SUCCESS: OK>
-	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
-	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
-	at org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
-	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
-	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
-	at org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1141)
-	at com.anuj.cache.server.CacheServerTest.testDelete(CacheServerTest.java:27)
+	at com.anuj.cache.server.CacheServerTest.testPutAndGet(CacheServerTest.java:18)
 	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
