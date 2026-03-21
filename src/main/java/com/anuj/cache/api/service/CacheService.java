@@ -9,6 +9,7 @@ public class CacheService {
 
     public CacheService(LRUCache<String, String> cache) {
         this.cache = cache;
+        System.out.println("TCP Cache instance :" + cache.hashCode());
     }
 
     public void put(String key, String value) {

@@ -1,12 +1,13 @@
 package com.anuj.cache.server;
 
 import org.junit.jupiter.api.Test;
+import com.anuj.cache.core.LRUCache;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class CacheServerTest {
-
-    private final CacheServer server = new CacheServer(1000);
+    LRUCache<String, String> cache = new LRUCache<>(1000);
+    private final CacheServer server = new CacheServer(9090, cache);
 
     @Test
     void testPutAndGet() {

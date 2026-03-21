@@ -18,18 +18,24 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 public class CacheServer {
+    private final int port;
     private final LRUCache<String, String> cache;
     private static final Logger logger =
             Logger.getLogger(CacheServer.class.getName());
-    private final ExecutorService threadPool =
-            Executors.newFixedThreadPool(10);
+
+    private final ExecutorService threadPool;
     private SnapshotManager snapshotManager;
     private WALManager walManager;
-    private final long startTime = System.currentTimeMillis();
-    // CONSTRUCTOR
-    public CacheServer(int capacity) {
-        this.cache = new LRUCache<>(capacity);
 
+    private final long startTime = System.currentTimeMillis();
+    private volatile boolean running = true;
+
+    // CONSTRUCTOR
+    public CacheServer(int port, LRUCache<String, String> cache) {
+        System.out.println("TCP Cache Instance: " + cache.hashCode());
+        this.port = port;
+        this.cache = cache;
+        this.threadPool = Executors.newFixedThreadPool(10);
         snapshotManager = new SnapshotManager("cache_snapshot.txt");
         walManager = new WALManager("cache_wal.log");
 
@@ -46,15 +52,19 @@ public class CacheServer {
             walManager.resetLog();
         }, 30, 30, TimeUnit.SECONDS);
     }
-    public void start(int port) throws Exception {
-        ServerSocket serverSocket = new ServerSocket(port);
-        logger.info("Cache server started on port " + port);
-        while (true) {
-            Socket clientSocket = serverSocket.accept();
-            logger.info("Client connected: "
-                    + clientSocket.getRemoteSocketAddress());
-            threadPool.submit(() -> handleClient(clientSocket));
-        }
+    public void start() {
+        new Thread(() -> {
+            try (ServerSocket serverSocket = new ServerSocket(port)) {
+                logger.info("TCP Cache server started on port " + port);
+                while (running) {
+                    Socket clientSocket = serverSocket.accept();
+                    logger.info("Client connected: " + clientSocket.getRemoteSocketAddress());
+                    threadPool.submit(() -> handleClient(clientSocket));
+                }
+            } catch (Exception e) {
+                logger.severe("Error starting server: " + e.getMessage());
+            }
+        }).start();
     }
     private void handleClient(Socket socket) {
         try {
@@ -92,7 +102,7 @@ public class CacheServer {
                 if (parts.length < 2)
                     return "ERROR: GET requires key";
                 String value = cache.get(parts[1]);
-                return value == null ? "NULL" : "VALUE " + value;
+                return value == null ? "NULL" : "VALUE: " + value;
 
             case "DELETE":
                 if (parts.length < 2)
@@ -105,7 +115,7 @@ public class CacheServer {
                 return getStats();
 
             default:
-                return "ERROR: PUT requires key and value";
+                return "ERROR: Unknown command";
         }
     }
     private String getStats() {
@@ -127,7 +137,12 @@ public class CacheServer {
                 ",capacity=" + cache.capacity() +
                 ",size=" + cache.size();
     }
-    public static void main(String[] args) throws Exception {
+    public void stop() {
+        running = false;
+        threadPool.shutdown();
+        logger.info("Cache server stopped.");
+    }
+    /* public static void main(String[] args) throws Exception {
         int capacity = 1000;
         String env = System.getenv("CACHE_SIZE");
         if (env != null) {
@@ -150,5 +165,5 @@ public class CacheServer {
             System.out.println("Cache server stopped.");
         }));
         server.start(8080);
-    }
+    }*/
 }
