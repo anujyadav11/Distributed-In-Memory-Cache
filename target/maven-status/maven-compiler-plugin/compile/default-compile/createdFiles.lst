@@ -7,6 +7,7 @@ com/anuj/cache/client/CacheBenchmark.class
 com/anuj/cache/eviction/EvictionPolicy.class
 com/anuj/cache/core/Cache.class
 com/anuj/cache/api/controller/CacheController.class
+com/anuj/cache/api/config/ShutdownConfig.class
 com/anuj/cache/persistence/WALManager.class
 com/anuj/cache/api/config/TcpServerRunner.class
 com/anuj/cache/core/LRUCache.class

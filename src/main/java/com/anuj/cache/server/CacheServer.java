@@ -24,18 +24,25 @@ public class CacheServer {
             Logger.getLogger(CacheServer.class.getName());
 
     private final ExecutorService threadPool;
+    private final ScheduledExecutorService scheduler;
+    
     private SnapshotManager snapshotManager;
     private WALManager walManager;
 
     private final long startTime = System.currentTimeMillis();
     private volatile boolean running = true;
 
+    private ServerSocket serverSocket;
+
     // CONSTRUCTOR
     public CacheServer(int port, LRUCache<String, String> cache) {
-        System.out.println("TCP Cache Instance: " + cache.hashCode());
+        logger.info("TCP Cache Instance: " + cache.hashCode());
         this.port = port;
         this.cache = cache;
+
         this.threadPool = Executors.newFixedThreadPool(10);
+        this.scheduler = Executors.newScheduledThreadPool(1);
+        
         snapshotManager = new SnapshotManager("cache_snapshot.txt");
         walManager = new WALManager("cache_wal.log");
 
@@ -54,20 +61,29 @@ public class CacheServer {
     }
     public void start() {
         new Thread(() -> {
-            try (ServerSocket serverSocket = new ServerSocket(port)) {
+            try {
+                serverSocket = new ServerSocket(port); 
                 logger.info("TCP Cache server started on port " + port);
+
                 while (running) {
                     Socket clientSocket = serverSocket.accept();
-                    logger.info("Client connected: " + clientSocket.getRemoteSocketAddress());
+
+                    logger.info("Client connected: " +
+                            clientSocket.getRemoteSocketAddress());
+
                     threadPool.submit(() -> handleClient(clientSocket));
                 }
+
             } catch (Exception e) {
-                logger.severe("Error starting server: " + e.getMessage());
+                if (running) {
+                    logger.severe("Error starting server: " + e.getMessage());
+                }
             }
         }).start();
     }
     private void handleClient(Socket socket) {
         try {
+            socket.setSoTimeout(30000); // 30 seconds timeout
             BufferedReader in =
                     new BufferedReader(
                             new InputStreamReader(socket.getInputStream()));
@@ -139,7 +155,15 @@ public class CacheServer {
     }
     public void stop() {
         running = false;
+        try {
+            if (serverSocket != null) {
+                serverSocket.close();
+            }
+        } catch (Exception e) {
+            logger.warning("Error closing server socket: " + e.getMessage());
+        }
         threadPool.shutdown();
+        scheduler.shutdown();
         logger.info("Cache server stopped.");
     }
     /* public static void main(String[] args) throws Exception {

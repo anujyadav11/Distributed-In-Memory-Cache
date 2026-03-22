@@ -3,24 +3,69 @@ package com.anuj.cache.api.service;
 import com.anuj.cache.core.LRUCache;
 import org.springframework.stereotype.Service;
 
+import java.util.logging.Logger;
+
 @Service
 public class CacheService {
+
+    private static final Logger logger =
+            Logger.getLogger(CacheService.class.getName());
+
     private final LRUCache<String, String> cache;
+    private final long startTime = System.currentTimeMillis();
 
     public CacheService(LRUCache<String, String> cache) {
         this.cache = cache;
-        System.out.println("TCP Cache instance :" + cache.hashCode());
+        logger.info("HTTP Cache instance: " + cache.hashCode());
     }
-
+    // ✅ PUT
     public void put(String key, String value) {
+        validateKey(key);
         cache.put(key, value);
     }
-
+    // ✅ PUT with TTL
+    public void putWithTTL(String key, String value, long ttl) {
+        validateKey(key);
+        if (ttl <= 0) {
+            throw new IllegalArgumentException("TTL must be greater than 0");
+        }
+        cache.put(key, value, ttl);
+    }
+    // ✅ GET
     public String get(String key) {
+        validateKey(key);
         return cache.get(key);
     }
+    // ✅ DELETE
     public void delete(String key) {
+        validateKey(key);
         cache.delete(key);
     }
-}
+    // ✅ STATS
+    public String getStats() {
+        var metrics = cache.getMetrics();
 
+        long hits = metrics.getHits();
+        long misses = metrics.getMisses();
+        long total = hits + misses;
+
+        double hitRate = total == 0 ? 0 : ((double) hits / total) * 100;
+        long uptimeSeconds =
+                (System.currentTimeMillis() - startTime) / 1000;
+
+        return "hits=" + hits +
+                ",misses=" + misses +
+                ",hitRate=" + String.format("%.2f", hitRate) + "%" +
+                ",evictions=" + metrics.getEvictions() +
+                ",expirations=" + metrics.getExpirations() +
+                ",uptime=" + uptimeSeconds + "s" +
+                ",capacity=" + cache.capacity() +
+                ",size=" + cache.size();
+    }
+    // ✅ VALIDATION (important for API safety)
+    private void validateKey(String key) {
+        if (key == null || key.isBlank()) {
+            throw new IllegalArgumentException("Key cannot be null or empty");
+        }
+    }
+}
