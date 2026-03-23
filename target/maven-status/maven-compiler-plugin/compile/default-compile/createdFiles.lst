@@ -1,6 +1,8 @@
 com/anuj/cache/server/CacheServer.class
 com/anuj/cache/persistence/SnapshotManager.class
 com/anuj/cache/client/CacheClient.class
+com/anuj/cache/distributed/DistributedConfig.class
+com/anuj/cache/distributed/ConsistentHashing.class
 com/anuj/cache/core/ChacheMetrics.class
 com/anuj/cache/api/CacheApiApplication.class
 com/anuj/cache/client/CacheBenchmark.class
@@ -10,8 +12,10 @@ com/anuj/cache/api/controller/CacheController.class
 com/anuj/cache/api/config/ShutdownConfig.class
 com/anuj/cache/persistence/WALManager.class
 com/anuj/cache/api/config/TcpServerRunner.class
+com/anuj/cache/distributed/DistributedTestRunner.class
 com/anuj/cache/core/LRUCache.class
 com/anuj/cache/core/CacheEntry.class
 com/anuj/cache/api/service/CacheService.class
 com/anuj/cache/api/config/CacheConfig.class
 com/anuj/cache/core/Node.class
+com/anuj/cache/distributed/DistributedCacheRouter.class
