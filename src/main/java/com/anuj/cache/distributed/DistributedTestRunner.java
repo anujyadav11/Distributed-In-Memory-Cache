@@ -6,13 +6,26 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class DistributedTestRunner {
+
     @Bean
-    public CommandLineRunner testRouting(DistributedCacheRouter router) {
+    public CommandLineRunner testRouting(DistributedCacheRouter router,
+                                        ConsistentHashing hashing) {
         return args -> {
-            System.out.println("Routing test :");
-            System.out.println("user1 routed to: " + router.route("user1"));
-            System.out.println("user2 routed to: " + router.route("user2"));
-            System.out.println("user3 routed to: " + router.route("user3"));
+
+            System.out.println("\n================ ROUTING TEST ================\n");
+
+            // ✅ Check ring size
+            System.out.println("Ring size: " + hashing.getRingSize());
+
+            // ✅ Test distribution
+            for (int i = 1; i <= 20; i++) {
+                String key = "user" + i;
+                String node = router.route(key);
+
+                System.out.println(key + " → " + node);
+            }
+
+            System.out.println("\n==============================================\n");
         };
     }
 }

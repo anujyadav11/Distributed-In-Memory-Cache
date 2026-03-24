@@ -15,7 +15,12 @@ public class ConsistentHashing {
     public void addNode(String node) {
         for (int i = 0; i < virtualNodes; i++) {
             int hash = hash(node + "#" + i);
+            System.out.println("Node: " + node + " Hash: " + hash);
+            while(ring.containsKey(hash)) {
+                hash = hash(hash + "collision"); // Linear probing
+            }
             ring.put(hash, node);
+
         }
     }
     public void removeNode(String node) {
@@ -28,15 +33,28 @@ public class ConsistentHashing {
         if (ring.isEmpty()) {
             return null;
         }
-        int hash = hash(key);
-        
-        if (!ring.containsKey(hash)) {
-            SortedMap<Integer, String> tailMap = ring.tailMap(hash);
-            hash = tailMap.isEmpty() ? ring.firstKey() : tailMap.firstKey();
+        if(key == null || key.isBlank()) {
+            throw new IllegalArgumentException("Key cannot be null or empty");
         }
-        return ring.get(hash);
+        int hash = hash(key);
+        System.out.println("Key: " + key + " Hash: " + hash);
+        var entry = ring.ceilingEntry(hash);
+        if (entry == null) {
+            entry = ring.firstEntry();
+        }
+        return entry.getValue();
     }
     private int hash(String key) {
-        return Math.abs(key.hashCode()); // Ensure non-negative
+    int h = key.hashCode();
+    // 🔥 mix bits (important)
+    h ^= (h >>> 16);
+    h *= 0x85ebca6b;
+    h ^= (h >>> 13);
+    h *= 0xc2b2ae35;
+    h ^= (h >>> 16);
+    return h & 0x7fffffff;
+}
+    public int getRingSize() {
+        return ring.size();
     }
 }

@@ -9,11 +9,24 @@ import java.util.List;
 public class DistributedConfig {
     @Bean
     public ConsistentHashing consistentHashing() {
-        List<String> nodes = List.of("localhost:9001", "localhost:9002", "localhost:9003");
+        List<String> nodes = List.of(
+                "localhost:9001",
+                "localhost:9002",
+                "localhost:9003"
+);
         return new ConsistentHashing(nodes, 100);
     }
+    // ✅ ADD THIS (missing bean)
     @Bean
-    public DistributedCacheRouter distributedCacheRouter(ConsistentHashing consistentHashing) {
-        return new DistributedCacheRouter(consistentHashing);
+    public TcpCacheClient tcpCacheClient() {
+        return new TcpCacheClient();
+    }
+    // ✅ FIXED constructor injection
+    @Bean
+    public DistributedCacheRouter distributedCacheRouter(
+            ConsistentHashing consistentHashing,
+            TcpCacheClient tcpCacheClient) {
+
+        return new DistributedCacheRouter(consistentHashing, tcpCacheClient);
     }
 }
