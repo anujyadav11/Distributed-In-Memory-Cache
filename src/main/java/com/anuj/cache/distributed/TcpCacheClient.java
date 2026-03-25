@@ -19,12 +19,7 @@ public class TcpCacheClient {
             int port = Integer.parseInt(parts[1]);
 
             Socket socket = new Socket();
-
-            // ✅ connection timeout
             socket.connect(new InetSocketAddress(host, port), 2000);
-
-            // ✅ read timeout
-            socket.setSoTimeout(2000);
 
             try (socket;
                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
