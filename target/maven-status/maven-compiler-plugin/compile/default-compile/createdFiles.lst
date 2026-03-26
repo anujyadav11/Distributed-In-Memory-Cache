@@ -1,5 +1,6 @@
 com/anuj/cache/server/CacheServer.class
 com/anuj/cache/persistence/SnapshotManager.class
+com/anuj/cache/distributed/NodeHealthTracker.class
 com/anuj/cache/client/CacheClient.class
 com/anuj/cache/distributed/DistributedConfig.class
 com/anuj/cache/distributed/ConsistentHashing.class

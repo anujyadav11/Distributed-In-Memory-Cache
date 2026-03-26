@@ -13,30 +13,35 @@ public class TcpCacheClient {
             Logger.getLogger(TcpCacheClient.class.getName());
 
     public String send(String node, String command) {
-        try {
-            String[] parts = node.split(":");
-            String host = parts[0];
-            int port = Integer.parseInt(parts[1]);
+        int retries = 2;
+        for(int i = 0; i < retries; i++) {
+            try {
+                String[] parts = node.split(":");
+                String host = parts[0];
+                int port = Integer.parseInt(parts[1]);
 
-            Socket socket = new Socket();
-            socket.connect(new InetSocketAddress(host, port), 2000);
+                Socket socket = new Socket();
+                socket.connect(new InetSocketAddress(host, port), 2000);
 
-            try (socket;
-                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-                BufferedReader in = new BufferedReader(
-                        new InputStreamReader(socket.getInputStream()))) {
+                try (socket;
+                    PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+                    BufferedReader in = new BufferedReader(
+                            new InputStreamReader(socket.getInputStream()))) {
 
-                out.println(command);
+                    out.println(command);
 
-                String response = in.readLine();
+                    String response = in.readLine();
 
-                return response != null ? response : "ERROR: EMPTY_RESPONSE";
+                    return response != null ? response : "ERROR: EMPTY_RESPONSE";
+                }
+
+            } catch (Exception e) {
+                if(i == retries){
+                    logger.warning("Failed to connect to node: " + node + " after " + retries + " attempts");
+                    return "ERROR: NODE_UNREACHABLE";
+                }
             }
-
-        } catch (Exception e) {
-            logger.warning("Error communicating with node " + node + ": " + e.getMessage());
-
-            return "ERROR: NODE_UNAVAILABLE";
         }
+        return "ERROR: ALL_NODES_UNAVAILABLE";
     }
 }

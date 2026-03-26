@@ -44,7 +44,7 @@ public class ConsistentHashing {
         }
         return entry.getValue();
     }
-    public int hash(String key) {
+    private int hash(String key) {
     int h = key.hashCode();
     // 🔥 mix bits (important)
     h ^= (h >>> 16);
@@ -53,7 +53,10 @@ public class ConsistentHashing {
     h *= 0xc2b2ae35;
     h ^= (h >>> 16);
     return h & 0x7fffffff;
-}
+    }
+    public int getHash(String key) {
+        return hash(key);
+    }
     public int getRingSize() {
         return ring.size();
     }

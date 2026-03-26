@@ -21,12 +21,17 @@ public class DistributedConfig {
     public TcpCacheClient tcpCacheClient() {
         return new TcpCacheClient();
     }
+    @Bean
+    public NodeHealthTracker nodeHealthTracker() {
+        return new NodeHealthTracker();
+    }
     // ✅ FIXED constructor injection
     @Bean
     public DistributedCacheRouter distributedCacheRouter(
             ConsistentHashing consistentHashing,
-            TcpCacheClient tcpCacheClient) {
+            TcpCacheClient tcpCacheClient,
+            NodeHealthTracker healthTracker) {
 
-        return new DistributedCacheRouter(consistentHashing, tcpCacheClient);
+        return new DistributedCacheRouter(consistentHashing, tcpCacheClient, healthTracker);
     }
 }

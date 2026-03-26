@@ -4,11 +4,14 @@ public class DistributedCacheRouter {
 
     private final ConsistentHashing hashing;
     private final TcpCacheClient client;
+    private final NodeHealthTracker healthTracker;
 
     public DistributedCacheRouter(ConsistentHashing hashing,
-                                TcpCacheClient client) {
+                                TcpCacheClient client,
+                                NodeHealthTracker healthTracker) {
         this.hashing = hashing;
         this.client = client; // ✅ FIXED
+        this.healthTracker = healthTracker; // ✅ FIXED
     }
     public String route(String key) {
         return hashing.getNode(key);
@@ -26,15 +29,16 @@ public class DistributedCacheRouter {
     public String get(String key) {
         String primary = hashing.getNode(key);
 
+        if(!healthTracker.isHealthy(primary)){
+            return tryReplica(key);
+        }
         String response = client.send(primary, "GET " + key);
 
-        if(response == null || response.startsWith("ERROR")) {
-            String replica = getReplicaNode(key);
-
-            System.out.println("Failover to replica: " + replica);
-
-            response = client.send(replica, "GET " + key);
+        if(response.startsWith("ERROR")){
+            healthTracker.markUnhealthy(primary);
+            return tryReplica(key);
         }
+        healthTracker.markHealthy(primary);
         return response;
     }
 
@@ -53,11 +57,23 @@ public class DistributedCacheRouter {
         String primary = hashing.getNode(key);
 
         var ring = hashing.getRing();
-        var entry = ring.ceilingEntry(hashing.hash(primary + "_replica"));
+        var entry = ring.ceilingEntry(hashing.getHash(primary + "_replica"));
 
         if(entry == null) {
             entry = ring.firstEntry();
         }
         return entry.getValue();
+    }
+    public String tryReplica(String key) {
+        String replica = getReplicaNode(key);
+
+        String response = client.send(replica, "GET " + key);
+
+        if(!response.startsWith("ERROR")){
+            healthTracker.markUnhealthy(replica);
+            return response;
+        }
+
+        return "ERROR: ALL_NODES_FAILED";
     }
 }
