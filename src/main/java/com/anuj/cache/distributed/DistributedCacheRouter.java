@@ -1,10 +1,17 @@
 package com.anuj.cache.distributed;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.Future;
 public class DistributedCacheRouter {
 
     private final ConsistentHashing hashing;
     private final TcpCacheClient client;
     private final NodeHealthTracker healthTracker;
+    private final ExecutorService executor = Executors.newFixedThreadPool(4);
 
     public DistributedCacheRouter(ConsistentHashing hashing,
                                 TcpCacheClient client,
@@ -17,29 +24,57 @@ public class DistributedCacheRouter {
         return hashing.getNode(key);
     }
     public String put(String key, String value) {
-        String node = hashing.getNode(key);
+        String primary = hashing.getNode(key);
         String replica = getReplicaNode(key);
 
-        String res1 = client.send(node, "PUT " + key + " " + value);
-        String res2 = client.send(replica, "PUT " + key + " " + value);
+        int successCount = 0;
 
-        return "Primary: " + res1 + ", Replica: " + res2;
+        String res1 = client.send(primary, "PUT " + key + " " + value);
+        if(!res1.startsWith("ERROR")) {
+            successCount++;
+        }
+
+        String res2 = client.send(replica, "PUT " + key + " " + value);
+        if(!res2.startsWith("ERROR")) {
+            successCount++;
+        }
+
+        if(successCount >= 1) {
+            return "SUCCESS (quorum achieved)";
+        }
+        return "ERROR: WRITE_FAILED";
     }
 
-    public String get(String key) {
+public String get(String key) {
+        if (key == null || key.isBlank()) {
+            return "ERROR: INVALID_KEY";
+        }
         String primary = hashing.getNode(key);
-
-        if(!healthTracker.isHealthy(primary)){
-            return tryReplica(key);
+        String replica = getReplicaNode(key);
+        Callable<String> primaryCall = () -> {
+            System.out.println("Trying primary: " + primary);
+            return client.send(primary, "GET " + key);
+        };
+        Callable<String> replicaCall = () -> {
+            System.out.println("Trying replica: " + replica);
+            return client.send(replica, "GET " + key);
+        };
+        CompletionService<String> completionService =
+            new ExecutorCompletionService<>(executor);
+        completionService.submit(primaryCall);
+        completionService.submit(replicaCall);
+    try {
+        for (int i = 0; i < 2; i++) {
+            Future<String> future = completionService.take(); // returns FIRST completed
+            String res = future.get();
+            if (res != null && !res.startsWith("ERROR") && !res.equals("NULL")) {
+                return res; // ✅ fastest successful response
+            }
         }
-        String response = client.send(primary, "GET " + key);
-
-        if(response.startsWith("ERROR")){
-            healthTracker.markUnhealthy(primary);
-            return tryReplica(key);
+        } catch (Exception e) {
+            return "ERROR: PARALLEL_READ_FAILED";
         }
-        healthTracker.markHealthy(primary);
-        return response;
+        return "NULL";
     }
 
     public String delete(String key) {
