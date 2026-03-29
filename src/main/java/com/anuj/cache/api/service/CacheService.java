@@ -21,7 +21,12 @@ public class CacheService {
     // ✅ PUT
     public void put(String key, String value) {
         validateKey(key);
-        cache.put(key, value);
+        if(value == null) {
+            throw new IllegalArgumentException("Value cannot be null");
+        }
+        value = value.replace("|", ""); // Replace pipes with empty strings
+        long version = System.currentTimeMillis();
+        cache.put(key, value + "|" + version);
     }
     // ✅ PUT with TTL
     public void putWithTTL(String key, String value, long ttl) {
@@ -34,7 +39,13 @@ public class CacheService {
     // ✅ GET
     public String get(String key) {
         validateKey(key);
-        return cache.get(key);
+        String val = cache.get(key);
+        if(val == null ) return null;
+        int sepIndex = val.lastIndexOf("|");
+        if (sepIndex == -1) {
+            return val; // No version info, return as is
+        }
+        return val.substring(0, sepIndex); // Return only the value, ignore version
     }
     // ✅ DELETE
     public void delete(String key) {
