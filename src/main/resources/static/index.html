@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Distributed Cache Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-900 text-white p-6">
+
+    <h1 class="text-3xl font-bold mb-6">🚀 Distributed Cache Dashboard</h1>
+
+    <div class="grid grid-cols-2 gap-6">
+
+        <!-- PUT -->
+        <div class="bg-gray-800 p-4 rounded">
+            <h2 class="text-xl mb-2">PUT</h2>
+            <input id="putKey" placeholder="Key" class="w-full p-2 mb-2 text-black">
+            <input id="putValue" placeholder="Value" class="w-full p-2 mb-2 text-black">
+            <button onclick="putData()" class="bg-blue-500 px-4 py-2">Store</button>
+        </div>
+
+        <!-- GET -->
+        <div class="bg-gray-800 p-4 rounded">
+            <h2 class="text-xl mb-2">GET</h2>
+            <input id="getKey" placeholder="Key" class="w-full p-2 mb-2 text-black">
+            <button onclick="getData()" class="bg-green-500 px-4 py-2">Fetch</button>
+            <p id="result" class="mt-3"></p>
+        </div>
+
+    </div>
+
+    <!-- STATS -->
+    <div class="bg-gray-800 p-4 mt-6 rounded">
+        <h2 class="text-xl mb-2">Cluster Info</h2>
+        <button onclick="getCluster()" class="bg-purple-500 px-4 py-2">Load Cluster</button>
+        <pre id="cluster" class="mt-3"></pre>
+    </div>
+
+    <script>
+        async function putData() {
+            const key = document.getElementById("putKey").value;
+            const value = document.getElementById("putValue").value;
+
+            const res = await fetch(`/cache?key=${key}&value=${value}`, {
+                method: "POST"
+            });
+
+            const data = await res.json();
+            alert(JSON.stringify(data));
+        }
+
+        async function getData() {
+            const key = document.getElementById("getKey").value;
+
+            const res = await fetch(`/cache/${key}`);
+            const data = await res.json();
+
+            document.getElementById("result").innerText =
+                JSON.stringify(data, null, 2);
+        }
+
+        async function getCluster() {
+            const res = await fetch(`/cache/cluster`);
+            const data = await res.json();
+
+            document.getElementById("cluster").innerText =
+                JSON.stringify(data, null, 2);
+        }
+    </script>
+
+</body>
+
+</html>
