@@ -1,203 +1,258 @@
 # 🚀 Distributed In-Memory Cache (Java)
 
-A high-performance, thread-safe distributed in-memory cache inspired by systems like Redis.
-Built from scratch in Java with a strong focus on **system design, concurrency, and persistence**.
+A **distributed, fault-tolerant in-memory cache system** inspired by Redis, DynamoDB, and Cassandra.
+
+Built from scratch in Java with focus on **distributed systems, concurrency, consistency, and real-world backend engineering**.
 
 ---
 
 ## ✨ Features
 
-- ⚡ **LRU (Least Recently Used) eviction** – O(1) get/put operations
-- ⏱️ **TTL (Time-To-Live)** support with automatic expiration
-- 🔒 **Thread-safe design** using `ReadWriteLock`
-- 🌐 **TCP-based cache server** for client communication
-- 🧠 **Command protocol**: PUT, GET, DELETE, STATS
-- 💾 **Snapshot persistence** (disk-based recovery)
-- 📝 **Write-Ahead Logging (WAL)** for durability
-- ♻️ **WAL compaction** to prevent unbounded log growth
-- 🛡️ **Atomic snapshot writes** (crash-safe persistence)
-- ⚙️ **Configurable cache capacity** (command-line args + environment variables)
-- 📊 **Metrics & observability**
-  - hits / misses
-  - hit rate
-  - evictions
-  - expirations
-  - uptime
+### ⚡ Core Cache Engine
 
-- 🖥️ **Interactive CLI client**
-- 📈 **Benchmarking tool** for QPS measurement
+- O(1) **LRU eviction** (HashMap + Doubly Linked List)
+- ⏱️ **TTL (Time-To-Live)** with background cleanup worker
+- 🔒 Thread-safe using `ReadWriteLock`
+
+---
+
+### 🌐 Distributed System
+
+- 🧩 **Multi-node architecture** (TCP-based nodes)
+- ⚖️ **Consistent hashing** for key distribution
+- 🔁 **Replication (primary + replica nodes)**
+- 🛡️ **Automatic failover**
+- 🔄 **Retry mechanism for node failures**
+- ❤️ **Node health tracking**
+
+---
+
+### ⚡ Performance Optimizations
+
+- ⚡ **Parallel reads (hedged requests)** for low latency
+- 📊 **Quorum-based writes** (fault-tolerant writes)
+- 🎯 **Load-balanced reads**
+- 🔧 **Read repair (auto-healing stale nodes)**
+
+---
+
+### 🧠 Consistency Model
+
+- 🕒 **Versioning using timestamps**
+- 🔄 **Eventual consistency**
+- ⚔️ Conflict resolution using **latest-write-wins**
+
+---
+
+### 💾 Persistence Layer
+
+- 📝 **Write-Ahead Logging (WAL)** for durability
+- 💾 **Snapshot persistence (RDB-style)**
+- ♻️ **WAL compaction**
+- 🛡️ **Atomic snapshot writes (crash-safe)**
+
+---
+
+### 🌍 API Layer (Spring Boot)
+
+- REST endpoints:
+  - `POST /cache`
+  - `GET /cache/{key}`
+  - `DELETE /cache/{key}`
+  - `GET /cache/cluster`
+
+---
+
+### 🎨 UI Dashboard
+
+- Modern **web-based dashboard**
+- Perform:
+  - PUT / GET / DELETE operations
+
+- View:
+  - Cluster nodes
+  - Live request logs
+
+- Clean UX for demo and debugging
+
+---
+
+### 📊 Observability
+
+- hits / misses
+- hit rate
+- evictions
+- expirations
+- uptime
 
 ---
 
 ## 🏗️ Architecture
 
-```
-Client
-  ↓
-TCP Cache Server
-  ↓
-Command Processor
-  ↓
+```text
+Browser UI
+   ↓
+Spring Boot HTTP API
+   ↓
+Distributed Cache Router
+   ↓
+Consistent Hash Ring
+   ↓
+TCP Cache Nodes (9001, 9002, 9003)
+   ↓
 LRU Cache Engine
-  ↓
-Persistence Layer
-   ├─ Snapshot (RDB-style)
-   └─ WAL (AOF-style)
+   ↓
+Persistence Layer (WAL + Snapshot)
 ```
 
 ---
 
-### Persistence Flow
+## 🔄 Distributed Flow
 
+### PUT (Write Path)
+
+```text
+Client → Router → Primary Node
+                      ↓
+                  Replica Node
 ```
-Write operation
-   ↓
-WAL (append log)
-   ↓
-Cache update
-   ↓
-Periodic snapshot
-   ↓
-WAL reset (compaction)
+
+- Writes are replicated to ensure durability
+- **Quorum-based success** (at least one node must succeed)
+
+---
+
+### GET (Read Path)
+
+```text
+Client → Router
+         ↓
+   Parallel Read (Primary + Replica)
+         ↓
+   Fastest response returned
+         ↓
+   Read Repair (if inconsistency detected)
 ```
 
 ---
 
-### Recovery Flow
+## 💾 Persistence Flow
 
+```text
+Write → WAL → Cache Update → Snapshot → WAL Compaction
 ```
-Server restart
-   ↓
-Load snapshot
-   ↓
-Replay WAL
-   ↓
-Cache restored
+
+---
+
+## 🔁 Recovery Flow
+
+```text
+Restart → Load Snapshot → Replay WAL → Cache Restored
 ```
 
 ---
 
 ## ⚙️ How to Run
 
-### 1️⃣ Compile
+---
+
+### 1️⃣ Build
 
 ```bash
-mvn clean compile
+mvn clean package
 ```
 
 ---
 
-### 2️⃣ Start Cache Server
+### 2️⃣ Start Distributed Nodes
+
+Run 3 instances:
 
 ```bash
-java com.anuj.cache.server.CacheServer 1000
-```
+mvn spring-boot:run -Dspring-boot.run.arguments="--server.port=8081 --cache.tcp.port=9001"
 
-- `1000` = cache capacity
-- Optional via environment variable:
+mvn spring-boot:run -Dspring-boot.run.arguments="--server.port=8082 --cache.tcp.port=9002"
 
-```bash
-export CACHE_SIZE=5000
-```
-
-Priority:
-
-```
-args > env > default
+mvn spring-boot:run -Dspring-boot.run.arguments="--server.port=8083 --cache.tcp.port=9003"
 ```
 
 ---
 
-### 3️⃣ Run Client
+### 3️⃣ Open Dashboard
 
-```bash
-java com.anuj.cache.client.CacheClient
+```
+http://localhost:8081
 ```
 
 ---
 
-## 💻 Supported Commands
+## 📡 API Examples
 
-```
-PUT <key> <value>
-GET <key>
-DELETE <key>
-STATS
-```
+### PUT
 
----
-
-## 📊 Example Usage
-
-```
-> PUT user1 Anuj
-→ SUCCESS: OK
-
-> GET user1
-→ VALUE: Anuj
-
-> GET user2
-→ NULL
-
-> DELETE user1
-→ SUCCESS: OK
-
-> STATS
-→ hits=2,misses=1,hitRate=66.67%,evictions=0,expirations=0,size=1,uptime=45s
+```http
+POST /cache?key=user1&value=anuj
 ```
 
 ---
 
-## 📈 Performance Benchmark
+### GET
 
-Measured using a multithreaded benchmark client.
-
-- Threads: 10
-- Requests per thread: 1000
-- Total requests: 20,000
-- QPS: **~15,000–20,000 ops/sec (local machine)**
-
-### Benchmark Approach
-
-- Concurrent threads simulate real-world load
-- Mixed PUT + GET workload
-- Throughput measured in QPS
+```http
+GET /cache/user1
+```
 
 ---
 
-## 🧠 Design Decisions
+### DELETE
 
-### 🔹 LRU Cache
+```http
+DELETE /cache/user1
+```
 
-Ensures efficient memory usage by evicting least recently used entries while maintaining O(1) operations.
+---
 
-### 🔹 TTL Support
+### CLUSTER
 
-Entries expire automatically using timestamp-based validation and background cleanup.
+```http
+GET /cache/cluster
+```
 
-### 🔹 WAL (Write-Ahead Log)
+---
 
-Guarantees durability by logging operations before applying them to memory.
+## 📊 Performance
 
-### 🔹 Snapshot Persistence
+- ~15,000–20,000 QPS (local benchmark)
+- Parallel reads reduce latency
+- System remains available during node failures
 
-Periodically saves full cache state to disk for faster recovery.
+---
 
-### 🔹 Atomic Snapshots
+## 🧠 Key Concepts Implemented
 
-Snapshots are written to a temporary file and atomically renamed to prevent corruption.
+| Concept              | Description                |
+| -------------------- | -------------------------- |
+| Consistent Hashing   | Efficient key distribution |
+| Replication          | Data redundancy            |
+| Quorum Writes        | Fault-tolerant writes      |
+| Parallel Reads       | Low-latency reads          |
+| Read Repair          | Self-healing data          |
+| Eventual Consistency | Distributed correctness    |
+| WAL + Snapshot       | Durable persistence        |
 
-### 🔹 WAL + Snapshot Strategy
+---
 
-Inspired by Redis persistence model:
+## 📁 Project Structure
 
-- WAL → ensures durability
-- Snapshot → enables fast recovery
-
-### 🔹 Thread Safety
-
-- Optimized for read-heavy workloads using `ReadWriteLock`
-- Concurrent request handling via thread pool
+```text
+src/main/java/com/anuj/cache
+├── core
+├── server
+├── persistence
+├── distributed
+├── api
+├── client
+```
 
 ---
 
@@ -205,47 +260,23 @@ Inspired by Redis persistence model:
 
 This project demonstrates:
 
-- Strong system design fundamentals
-- Building a Redis-like cache from scratch
-- Concurrency and synchronization in Java
-- Real-world persistence strategies (WAL + Snapshot)
-- Performance testing and benchmarking
-- Production-level backend engineering practices
-
----
-
-## 📁 Project Structure
-
-```
-src/main/java/com/anuj/cache
-├── core
-│   ├── LRUCache
-│   ├── CacheEntry
-│   ├── Node
-│   └── CacheMetrics
-│
-├── server
-│   └── CacheServer
-│
-├── persistence
-│   ├── SnapshotManager
-│   └── WALManager
-│
-├── client
-│   ├── CacheClient
-│   └── CacheBenchmark
-```
+- Distributed systems design (SDE-2 level)
+- Building a Redis-like system from scratch
+- Fault tolerance & replication strategies
+- Concurrency in Java
+- Real-world persistence (WAL + Snapshot)
+- Performance optimization techniques
+- Full-stack integration (Backend + UI)
 
 ---
 
 ## 🔮 Future Improvements
 
-- 🌐 Distributed cache (multi-node)
-- 🔁 Replication (leader-follower)
-- ⚖️ Consistent hashing
-- 🌍 HTTP/REST API layer
-- 📦 Docker containerization
-- 📡 Metrics integration (Prometheus / Grafana)
+- Leader election (Raft / Zookeeper-style)
+- Strong consistency mode
+- Docker + Kubernetes deployment
+- Prometheus + Grafana monitoring
+- Cloud deployment (AWS/GCP)
 
 ---
 
