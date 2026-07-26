@@ -4,70 +4,94 @@
 <head>
     <title>Distributed Cache Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        .card {
+            background: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 12px;
+            padding: 20px;
+            transition: 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+        .badge-success {
+            color: #22c55e;
+        }
+
+        .badge-error {
+            color: #ef4444;
+        }
+    </style>
 </head>
 
-<body class="bg-gray-950 text-gray-200 p-6 font-sans">
+<body class="bg-black text-gray-200 p-6">
 
-    <h1 class="text-4xl font-bold mb-6 text-blue-400">
+    <h1 class="text-4xl font-bold mb-8 text-blue-400">
         ⚡ Distributed Cache System
     </h1>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- GRID -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-        <!-- PUT CARD -->
-        <div class="bg-gray-900 p-6 rounded-xl shadow-lg border border-gray-800">
-            <h2 class="text-xl mb-4 text-green-400 font-semibold">PUT (Store Value)</h2>
+        <!-- PUT -->
+        <div class="card">
+            <h2 class="text-green-400 text-lg mb-4">PUT</h2>
 
-            <input id="putKey" placeholder="Key" class="w-full p-2 mb-3 rounded bg-gray-800 border border-gray-700">
+            <input id="putKey" placeholder="Key" class="w-full p-2 mb-2 bg-gray-800 border border-gray-700 rounded">
 
-            <input id="putValue" placeholder="Value" class="w-full p-2 mb-3 rounded bg-gray-800 border border-gray-700">
+            <input id="putValue" placeholder="Value" class="w-full p-2 mb-3 bg-gray-800 border border-gray-700 rounded">
 
-            <button onclick="putData()" class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded w-full">
+            <button onclick="putData()" class="bg-green-500 w-full py-2 rounded hover:bg-green-600">
                 Store
             </button>
         </div>
 
-        <!-- GET CARD -->
-        <div class="bg-gray-900 p-6 rounded-xl shadow-lg border border-gray-800">
-            <h2 class="text-xl mb-4 text-blue-400 font-semibold">GET (Fetch Value)</h2>
+        <!-- GET -->
+        <div class="card">
+            <h2 class="text-blue-400 text-lg mb-4">GET</h2>
 
-            <input id="getKey" placeholder="Key" class="w-full p-2 mb-3 rounded bg-gray-800 border border-gray-700">
+            <input id="getKey" placeholder="Key" class="w-full p-2 mb-3 bg-gray-800 border border-gray-700 rounded">
 
-            <button onclick="getData()" class="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded w-full">
+            <button onclick="getData()" class="bg-blue-500 w-full py-2 rounded hover:bg-blue-600">
                 Fetch
             </button>
 
-            <div id="getResult" class="mt-4 p-3 bg-gray-800 rounded text-sm"></div>
+            <div id="getResult" class="mt-4 text-sm"></div>
         </div>
 
-        <!-- DELETE CARD -->
-        <div class="bg-gray-900 p-6 rounded-xl shadow-lg border border-gray-800">
-            <h2 class="text-xl mb-4 text-red-400 font-semibold">DELETE (Remove Key)</h2>
+        <!-- DELETE -->
+        <div class="card">
+            <h2 class="text-red-400 text-lg mb-4">DELETE</h2>
 
-            <input id="deleteKey" placeholder="Key" class="w-full p-2 mb-3 rounded bg-gray-800 border border-gray-700">
+            <input id="deleteKey" placeholder="Key" class="w-full p-2 mb-3 bg-gray-800 border border-gray-700 rounded">
 
-            <button onclick="deleteData()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded w-full">
+            <button onclick="deleteData()" class="bg-red-500 w-full py-2 rounded hover:bg-red-600">
                 Delete
             </button>
 
-            <div id="deleteResult" class="mt-4 p-3 bg-gray-800 rounded text-sm"></div>
+            <div id="deleteResult" class="mt-4 text-sm"></div>
         </div>
 
-        <!-- CLUSTER -->
-        <div class="bg-gray-900 p-6 mt-6 rounded-xl border border-gray-800">
-            <h2 class="text-xl text-purple-400 mb-3">Cluster Nodes</h2>
-
-            <button onclick="getCluster()" class="bg-purple-500 hover:bg-purple-600 px-4 py-2 rounded">
-                Load Cluster Info
-            </button>
-
-            <div id="cluster" class="mt-4 text-sm"></div>
-        </div>
     </div>
 
-    <!-- LOG PANEL -->
-    <div class="bg-black mt-6 p-4 rounded-xl border border-gray-800">
-        <h2 class="text-lg text-yellow-400 mb-2">Live Logs</h2>
+    <!-- CLUSTER -->
+    <div class="card mt-6">
+        <h2 class="text-purple-400 mb-3">Cluster Nodes</h2>
+
+        <button onclick="getCluster()" class="bg-purple-500 px-4 py-2 rounded hover:bg-purple-600">
+            Load Cluster
+        </button>
+
+        <div id="cluster" class="mt-4 grid grid-cols-3 gap-3"></div>
+    </div>
+
+    <!-- LOGS -->
+    <div class="card mt-6">
+        <h2 class="text-yellow-400 mb-2">Live Logs</h2>
         <div id="logs" class="text-xs max-h-48 overflow-y-auto"></div>
     </div>
 
@@ -78,25 +102,26 @@
             logs.innerHTML = `<div>• ${msg}</div>` + logs.innerHTML;
         }
 
-        function renderStatus(status) {
+        function statusBadge(status) {
             return status.includes("SUCCESS")
-                ? `<span class="text-green-400">✔ ${status}</span>`
-                : `<span class="text-red-400">✖ ${status}</span>`;
+                ? `<span class="badge-success">✔ ${status}</span>`
+                : `<span class="badge-error">✖ ${status}</span>`;
         }
 
         async function putData() {
             const key = document.getElementById("putKey").value;
             const value = document.getElementById("putValue").value;
 
-            log(`PUT → ${key}`);
+            const start = Date.now();
 
             const res = await fetch(`/cache?key=${key}&value=${value}`, {
                 method: "POST"
             });
 
             const data = await res.json();
+            const latency = Date.now() - start;
 
-            log(`PUT Result → ${data.status}`);
+            log(`PUT ${key} → ${data.status} (${latency}ms)`);
 
             alert(JSON.stringify(data, null, 2));
         }
@@ -104,41 +129,34 @@
         async function getData() {
             const key = document.getElementById("getKey").value;
 
-            log(`GET → ${key}`);
+            const start = Date.now();
 
             const res = await fetch(`/cache/${key}`);
-            const data = await res.json();
+            const latency = Date.now() - start;
 
             const container = document.getElementById("getResult");
 
             if (res.status === 404) {
-                container.innerHTML = `
-            <div class="text-red-400">Key not found</div>
-        `;
-                log("GET → NOT FOUND");
+                container.innerHTML = `<div class="badge-error">Key not found</div>`;
+                log(`GET ${key} → NOT FOUND`);
                 return;
             }
 
+            const data = await res.json();
+
             container.innerHTML = `
-        <div><strong>Key:</strong> ${data.key}</div>
-        <div><strong>Value:</strong> ${data.value}</div>
-        <div>${renderStatus(data.status)}</div>
+        <div><b>Value:</b> ${data.value}</div>
+        <div>${statusBadge(data.status)}</div>
+        <div class="text-gray-400 text-xs mt-1">Latency: ${latency} ms</div>
     `;
 
-            log(`GET Result → ${data.value}`);
+            log(`GET ${key} → ${data.value} (${latency}ms)`);
         }
 
         async function deleteData() {
             const key = document.getElementById("deleteKey").value;
 
-            if (!key) {
-                alert("Enter a key");
-                return;
-            }
-            if (!confirm(`Delete key "${key}"?`)) {
-                return;
-            }
-            log(`DELETE → ${key}`);
+            if (!confirm(`Delete key "${key}"?`)) return;
 
             const res = await fetch(`/cache/${key}`, {
                 method: "DELETE"
@@ -146,28 +164,22 @@
 
             const data = await res.json();
 
-            const container = document.getElementById("deleteResult");
+            document.getElementById("deleteResult").innerHTML =
+                statusBadge(data.status);
 
-            container.innerHTML = `
-        <div><strong>Key:</strong> ${data.key}</div>
-        <div>${renderStatus(data.status)}</div>
-    `;
-
-            log(`DELETE Result → ${data.status}`);
+            log(`DELETE ${key} → ${data.status}`);
         }
-        async function getCluster() {
-            log("Fetching cluster info...");
 
+        async function getCluster() {
             const res = await fetch(`/cache/cluster`);
             const data = await res.json();
 
-            const container = document.getElementById("cluster");
-
-            container.innerHTML = data.nodes.map(node => `
-        <div class="p-2 bg-gray-800 rounded mb-2">
-            🟢 ${node}
-        </div>
-    `).join("");
+            document.getElementById("cluster").innerHTML =
+                data.nodes.map(n => `
+            <div class="p-2 bg-gray-800 rounded text-center">
+                🟢 ${n}
+            </div>
+        `).join("");
 
             log("Cluster loaded");
         }
